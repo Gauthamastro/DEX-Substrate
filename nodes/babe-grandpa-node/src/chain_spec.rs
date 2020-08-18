@@ -41,16 +41,8 @@ pub fn local_testnet_config() -> ChainSpec {
 				vec![
 					account_id_from_seed::<sr25519::Public>("Alice"),
 					account_id_from_seed::<sr25519::Public>("Bob"),
-					// account_id_from_seed::<sr25519::Public>("Charlie"),
-					// account_id_from_seed::<sr25519::Public>("Dave"),
-					// account_id_from_seed::<sr25519::Public>("Eve"),
-					// account_id_from_seed::<sr25519::Public>("Ferdie"),
 					account_id_from_seed::<sr25519::Public>("Alice//stash"),
 					account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					// account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					// account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					// account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					// account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
 			)
 		},
