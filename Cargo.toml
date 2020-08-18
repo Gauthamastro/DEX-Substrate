@@ -1,0 +1,5 @@
+[workspace]
+members = [
+	"runtimes/babe-grandpa-runtime",
+	"nodes/babe-grandpa-node",
+]
