@@ -48,7 +48,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		},
 		vec![],
 		None,
-		None,
+		Some("dex_v0.0.1"),
 		None,
 		None,
 	)
