@@ -2,12 +2,15 @@
 
 use super::{
 	AccountId, BabeConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, WASM_BINARY,
+	SystemConfig, WASM_BINARY, SessionConfig, StakingConfig, StakerStatus,
 };
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
+use sp_runtime::{Perbill};
+use crate::Balance;
+use crate::opaque::SessionKeys;
 
 /// Helper function to generate a crypto pair from seed
 fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -27,13 +30,14 @@ where
 }
 
 /// Helper function to generate session key from seed
-pub fn authority_keys_from_seed(seed: &str) -> (BabeId, GrandpaId) {
+pub fn authority_keys_from_seed(seed: &str) -> (BabeId, GrandpaId,AccountId,AccountId) {
 	(
 		get_from_seed::<BabeId>(seed),
 		get_from_seed::<GrandpaId>(seed),
+		account_id_from_seed::<sr25519::Public>(&format!("{}//stash", seed)),
+		account_id_from_seed::<sr25519::Public>(seed)
 	)
 }
-
 pub fn dev_genesis() -> GenesisConfig {
 	testnet_genesis(
 		// Initial Authorities
@@ -52,10 +56,11 @@ pub fn dev_genesis() -> GenesisConfig {
 
 /// Helper function to build a genesis configuration
 pub fn testnet_genesis(
-	initial_authorities: Vec<(BabeId, GrandpaId)>,
+	initial_authorities: Vec<(BabeId, GrandpaId,AccountId,AccountId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 ) -> GenesisConfig {
+	const STASH: Balance = 100;
 	GenesisConfig {
 		system: Some(SystemConfig {
 			code: WASM_BINARY.to_vec(),
@@ -81,5 +86,29 @@ pub fn testnet_genesis(
 				.map(|x| (x.1.clone(), 1))
 				.collect(),
 		}),
+		pallet_session: Some(SessionConfig {
+			keys: initial_authorities.iter().map(|x| {
+				(x.2.clone(), x.2.clone(), session_keys(
+					x.1.clone(),
+					x.0.clone()
+				))
+			}).collect::<Vec<_>>(),
+		}),
+		pallet_staking: Some(StakingConfig {
+			validator_count: initial_authorities.len() as u32 * 2,
+			minimum_validator_count: initial_authorities.len() as u32,
+			stakers: initial_authorities.iter().map(|x| {
+				(x.2.clone(), x.3.clone(), STASH, StakerStatus::Validator)
+			}).collect(),
+			invulnerables: initial_authorities.iter().map(|x| x.2.clone()).collect(),
+			slash_reward_fraction: Perbill::from_percent(10),
+			.. Default::default()
+		}),
 	}
+}
+fn session_keys(
+	grandpa: GrandpaId,
+	babe: BabeId,
+) -> SessionKeys {
+	SessionKeys { grandpa, babe  }
 }

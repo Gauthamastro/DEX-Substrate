@@ -276,9 +276,9 @@ impl pallet_staking::Trait for Runtime {
 	type Currency = Balances;
 	type UnixTime = Timestamp;
 	type CurrencyToVote = CurrencyToVoteHandler;
-	type RewardRemainder = Treasury;
+	type RewardRemainder = (); // Treasury
 	type Event = Event;
-	type Slash = Treasury; // send the slashed funds to the treasury.
+	type Slash = (); // send the slashed funds to the treasury.
 	type Reward = (); // rewards are minted from the void
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
@@ -310,6 +310,38 @@ impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime where
 	type Extrinsic = UncheckedExtrinsic;
 	type OverarchingCall = Call;
 }
+
+// parameter_types! {
+// 	pub const ProposalBond: Permill = Permill::from_percent(5);
+// 	pub const ProposalBondMinimum: Balance = 1 * DOLLARS;
+// 	pub const SpendPeriod: BlockNumber = 1 * DAYS;
+// 	pub const Burn: Permill = Permill::from_percent(50);
+// 	pub const TipCountdown: BlockNumber = 1 * DAYS;
+// 	pub const TipFindersFee: Percent = Percent::from_percent(20);
+// 	pub const TipReportDepositBase: Balance = 1 * DOLLARS;
+// 	pub const TipReportDepositPerByte: Balance = 1 * CENTS;
+// 	pub const TreasuryModuleId: ModuleId = ModuleId(*b"py/trsry");
+// }
+//
+// impl pallet_treasury::Trait for Runtime {
+// 	type ModuleId = TreasuryModuleId;
+// 	type Currency = Balances;
+// 	type ApproveOrigin = EnsureRoot<AccountId>;
+// 	type RejectOrigin = EnsureRoot<AccountId>;
+// 	type Tippers = (); // Elections;
+// 	type TipCountdown = (); //TipCountdown;
+// 	type TipFindersFee = (); //TipFindersFee;
+// 	type TipReportDepositBase = ();//TipReportDepositBase;
+// 	type TipReportDepositPerByte = (); //TipReportDepositPerByte;
+// 	type Event = Event;
+// 	type ProposalRejection = ();
+// 	type ProposalBond = ProposalBond;
+// 	type ProposalBondMinimum = ProposalBondMinimum;
+// 	type SpendPeriod = SpendPeriod;
+// 	type Burn = Burn;
+// 	// type BurnDestination = (); Removed due to compiler errors
+// 	// type WeightInfo = (); Removed due to compiler errors
+// }
 
 parameter_types! {
 	pub const EpochDuration: u64 = EPOCH_DURATION_IN_BLOCKS as u64;
@@ -395,6 +427,7 @@ construct_runtime!(
 		TransactionPayment: transaction_payment::{Module, Storage},
 		Staking: pallet_staking::{Module, Call, Config<T>, Storage, Event<T>, ValidateUnsigned},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
+		// Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>}
 		// The Recipe Pallets
 		// (None)
 	}
