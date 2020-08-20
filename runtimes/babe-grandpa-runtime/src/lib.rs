@@ -351,21 +351,21 @@ parameter_types! {
 impl babe::Trait for Runtime {
 	type EpochDuration = EpochDuration;
 	type ExpectedBlockTime = ExpectedBlockTime;
-	type EpochChangeTrigger = pallet_babe::ExternalTrigger; // SameAuthoritiesForever
-	type KeyOwnerProofSystem = Historical;
-
-	type KeyOwnerProof = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-		KeyTypeId,
-		pallet_babe::AuthorityId,
-	)>>::Proof;
-
-	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-		KeyTypeId,
-		pallet_babe::AuthorityId,
-	)>>::IdentificationTuple;
-
-	type HandleEquivocation = ();
-	// pallet_babe::EquivocationHandler<Self::KeyOwnerIdentification, Offences>;
+	type EpochChangeTrigger = babe::ExternalTrigger; // SameAuthoritiesForever
+	// type KeyOwnerProofSystem = Historical;
+	//
+	// type KeyOwnerProof = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+	// 	KeyTypeId,
+	// 	pallet_babe::AuthorityId,
+	// )>>::Proof;
+	//
+	// type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+	// 	KeyTypeId,
+	// 	pallet_babe::AuthorityId,
+	// )>>::IdentificationTuple;
+	//
+	// type HandleEquivocation = ();
+	// // pallet_babe::EquivocationHandler<Self::KeyOwnerIdentification, Offences>;
 }
 
 impl grandpa::Trait for Runtime {
