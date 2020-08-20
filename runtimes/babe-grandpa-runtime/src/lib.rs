@@ -15,7 +15,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 #[cfg(feature = "std")]
 pub mod genesis;
 
-use babe::SameAuthoritiesForever;
+// use babe::SameAuthoritiesForever;
 use frame_system as system;
 use grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
 use sp_api::impl_runtime_apis;
