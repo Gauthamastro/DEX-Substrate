@@ -75,16 +75,18 @@ pub fn testnet_genesis(
 		}),
 		sudo: Some(SudoConfig { key: root_key }),
 		babe: Some(BabeConfig {
-			authorities: initial_authorities
-				.iter()
-				.map(|x| (x.0.clone(), 1))
-				.collect(),
+			// authorities: initial_authorities
+			// 	.iter()
+			// 	.map(|x| (x.0.clone(), 1))
+			// 	.collect(),
+			authorities : vec![]
 		}),
 		grandpa: Some(GrandpaConfig {
-			authorities: initial_authorities
-				.iter()
-				.map(|x| (x.1.clone(), 1))
-				.collect(),
+			// authorities: initial_authorities
+			// 	.iter()
+			// 	.map(|x| (x.1.clone(), 1))
+			// 	.collect(),
+			authorities : vec![]
 		}),
 		pallet_session: Some(SessionConfig {
 			keys: initial_authorities.iter().map(|x| {
