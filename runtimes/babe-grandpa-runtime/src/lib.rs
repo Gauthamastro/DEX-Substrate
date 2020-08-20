@@ -351,7 +351,7 @@ parameter_types! {
 impl babe::Trait for Runtime {
 	type EpochDuration = EpochDuration;
 	type ExpectedBlockTime = ExpectedBlockTime;
-	type EpochChangeTrigger = SameAuthoritiesForever;
+	type EpochChangeTrigger = pallet_babe::ExternalTrigger; // SameAuthoritiesForever
 }
 
 impl grandpa::Trait for Runtime {
