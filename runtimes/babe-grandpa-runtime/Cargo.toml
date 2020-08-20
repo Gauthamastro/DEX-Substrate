@@ -29,9 +29,9 @@ randomness-collective-flip = { package = 'pallet-randomness-collective-flip', ve
 sudo = { package = 'pallet-sudo', version = '2.0.0-rc4', default-features = false }
 timestamp = { package = 'pallet-timestamp', version = '2.0.0-rc4', default-features = false }
 transaction-payment = { package = 'pallet-transaction-payment', version = '2.0.0-rc4', default-features = false }
-
-# Recipe Pallets
-#TODO Maybe include Gautam's Validator Set allet here
+pallet-staking = {package = 'pallet-staking', version = '2.0.0-rc4' , default-features = false}
+pallet-staking-reward-curve = {package='pallet-staking-reward-curve', version = '2.0.0-rc4', default-features = false}
+pallet-session = {package = 'pallet-session', features = ['historical'], version='2.0.0-rc4', default-features = false}
 
 # Other Substrate dependencies
 frame-executive = { version = '2.0.0-rc4', default-features = false }
@@ -47,6 +47,7 @@ sp-io = { version = '2.0.0-rc4', default-features = false }
 sp-offchain = { version = '2.0.0-rc4', default-features = false }
 sp-runtime = { version = '2.0.0-rc4', default-features = false }
 sp-session = { version = '2.0.0-rc4', default-features = false }
+sp-staking = {version = '2.0.0-rc4', default-features = false}
 sp-std = { version = '2.0.0-rc4', default-features = false }
 sp-transaction-pool = { version = '2.0.0-rc4', default-features = false }
 sp-version = { version = '2.0.0-rc4', default-features = false }
@@ -88,6 +89,9 @@ std = [
 	"sudo/std",
 	"timestamp/std",
 	"transaction-payment/std",
+	"sp-staking/std",
+	"pallet-staking/std",
+	"pallet-session/std",
 
 	# Recipes pallets
 	# (None)
