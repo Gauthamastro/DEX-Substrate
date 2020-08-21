@@ -19,7 +19,7 @@ pub mod genesis;
 use frame_system as system;
 use grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H256};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H256,u32_trait::{_3, _4}};
 use sp_runtime::traits::{
 	BlakeTwo256, Block as BlockT, IdentifyAccount, IdentityLookup, NumberFor, Saturating, Verify,
 };
@@ -56,7 +56,7 @@ pub use pallet_staking::StakerStatus;
 use sp_runtime::curve::PiecewiseLinear;
 use sp_runtime::traits::{OpaqueKeys};
 use sp_runtime::transaction_validity::{ TransactionPriority};
-use frame_system::{EnsureRoot};
+use frame_system::{EnsureRoot,EnsureOneOf};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -284,7 +284,11 @@ impl pallet_staking::Trait for Runtime {
 	type BondingDuration = BondingDuration;
 	type SlashDeferDuration = SlashDeferDuration;
 	/// A super-majority of the council can cancel the slash.
-	type SlashCancelOrigin = EnsureRoot<AccountId>;
+	type SlashCancelOrigin = EnsureOneOf<
+		AccountId,
+		EnsureRoot<AccountId>,
+		pallet_collective::EnsureProportionAtLeast<_3, _4, AccountId, MainnetCouncil>
+	>;
 	type SessionInterface = Self;
 	type RewardCurve = RewardCurve;
 	type NextNewSession = Session;
@@ -342,6 +346,56 @@ impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime where
 // 	// type BurnDestination = (); Removed due to compiler errors
 // 	// type WeightInfo = (); Removed due to compiler errors
 // }
+
+// Mainnet Collective: This council decides the inflation rate, funding for new ideas and businesses on board
+parameter_types! {
+	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
+	pub const CouncilMaxProposals: u32 = 100;
+}
+
+type MainnetCouncil = pallet_collective::Instance1;
+impl pallet_collective::Trait<MainnetCouncil> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = CouncilMotionDuration;
+	type MaxProposals = CouncilMaxProposals;
+	// type WeightInfo = ();
+}
+
+// Mainnet Technical Collective: This council updates the block chain for bug fixes and adding new features
+parameter_types! {
+	pub const TechnicalMotionDuration: BlockNumber = 5 * DAYS;
+	pub const TechnicalMaxProposals: u32 = 100;
+}
+
+type TechnicalCouncil = pallet_collective::Instance2;
+impl pallet_collective::Trait<TechnicalCouncil> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = TechnicalMotionDuration;
+	type MaxProposals = TechnicalMaxProposals;
+	// type WeightInfo = ();
+}
+
+// Mainnet PebbleBTC Collective: This council votes on the proposal to liquidate the
+// collateral of custodians in case of theft of BTC.
+parameter_types! {
+	pub const PBTCMotionDuration: BlockNumber = 7 * DAYS;
+	pub const PBTCMaxProposals: u32 = 1;
+}
+
+type PBTCCouncil = pallet_collective::Instance3;
+impl pallet_collective::Trait<PBTCCouncil> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = TechnicalMotionDuration;
+	type MaxProposals = TechnicalMaxProposals;
+	// type WeightInfo = ();
+}
+
 
 parameter_types! {
 	pub const EpochDuration: u64 = EPOCH_DURATION_IN_BLOCKS as u64;
@@ -434,13 +488,16 @@ construct_runtime!(
 		System: system::{Module, Call, Storage, Config, Event<T>},
 		Timestamp: timestamp::{Module, Call, Storage, Inherent},
 		Babe: babe::{Module, Call, Storage, Config, Inherent(Timestamp)},
-		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
 		Balances: balances::{Module, Call, Storage, Config<T>, Event<T>},
 		RandomnessCollectiveFlip: randomness_collective_flip::{Module, Call, Storage},
 		Sudo: sudo::{Module, Call, Config<T>, Storage, Event<T>},
 		TransactionPayment: transaction_payment::{Module, Storage},
 		Staking: pallet_staking::{Module, Call, Config<T>, Storage, Event<T>, ValidateUnsigned},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
+		MainnetCollective: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		TechnicalCollective: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		PBTCCollective: pallet_collective::<Instance3>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
 		// Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>}
 		// The Recipe Pallets
 		// (None)
