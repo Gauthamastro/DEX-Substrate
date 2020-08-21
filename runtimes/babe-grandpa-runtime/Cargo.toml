@@ -33,6 +33,7 @@ pallet-staking = {package = 'pallet-staking', version = '2.0.0-rc4' , default-fe
 pallet-staking-reward-curve = {package='pallet-staking-reward-curve', version = '2.0.0-rc4', default-features = false}
 pallet-session = {package = 'pallet-session', features = ['historical'], version='2.0.0-rc4', default-features = false}
 #pallet-treasury = {package = 'pallet-treasury', version =' 2.0.0-rc4', default-features =false}
+pallet-collective = {package ='pallet-collective', version = '2.0.0-rc4', default-features=false}
 
 # Other Substrate dependencies
 frame-executive = { version = '2.0.0-rc4', default-features = false }
@@ -94,6 +95,7 @@ std = [
 	"pallet-staking/std",
 	"pallet-session/std",
 #	"pallet-treasury/std",
+	"pallet-collective/std",
 
 	# Recipes pallets
 	# (None)
