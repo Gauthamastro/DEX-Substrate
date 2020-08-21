@@ -15,7 +15,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 #[cfg(feature = "std")]
 pub mod genesis;
 
-use babe::SameAuthoritiesForever;
+// use babe::SameAuthoritiesForever;
 use frame_system as system;
 use grandpa::{AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList};
 use sp_api::impl_runtime_apis;
@@ -49,6 +49,14 @@ pub use frame_support::{
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 pub use timestamp::Call as TimestampCall;
+// Added by Gautham for Staking
+#[cfg(any(feature = "std", test))]
+pub use pallet_staking::StakerStatus;
+// use pallet_session::{historical as pallet_session_historical};
+use sp_runtime::curve::PiecewiseLinear;
+use sp_runtime::traits::{OpaqueKeys};
+use sp_runtime::transaction_validity::{ TransactionPriority};
+use frame_system::{EnsureRoot};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -201,6 +209,139 @@ impl system::Trait for Runtime {
 	/// The data to be stored in an account.
 	type AccountData = balances::AccountData<Balance>;
 }
+// Added by Gautham from impls in the substrate/bin/node
+/// Struct that handles the conversion of Balance -> `u64`. This is used for staking's election
+/// calculation.
+use sp_runtime::traits::Convert;
+pub struct CurrencyToVoteHandler;
+
+impl CurrencyToVoteHandler {
+	fn factor() -> Balance { (Balances::total_issuance() / u64::max_value() as Balance).max(1) }
+}
+
+impl Convert<Balance, u64> for CurrencyToVoteHandler {
+	fn convert(x: Balance) -> u64 { (x / Self::factor()) as u64 }
+}
+
+impl Convert<u128, Balance> for CurrencyToVoteHandler {
+	fn convert(x: u128) -> Balance { x * Self::factor() }
+}
+
+parameter_types! {
+	pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(17);
+}
+
+impl pallet_session::Trait for Runtime {
+	type Event = Event;
+	type ValidatorId = <Self as frame_system::Trait>::AccountId;
+	type ValidatorIdOf = pallet_staking::StashOf<Self>;
+	type ShouldEndSession = Babe;
+	type NextSessionRotation = Babe;
+	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+	type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+	type Keys = opaque::SessionKeys;
+	type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
+	// type WeightInfo = (); Removed because of compiler error
+}
+
+impl pallet_session::historical::Trait for Runtime {
+	type FullIdentification = pallet_staking::Exposure<AccountId, Balance>;
+	type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
+}
+
+pallet_staking_reward_curve::build! {
+	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
+		min_inflation: 0_025_000,
+		max_inflation: 0_100_000,
+		ideal_stake: 0_500_000,
+		falloff: 0_050_000,
+		max_piece_count: 40,
+		test_precision: 0_005_000,
+	);
+}
+
+parameter_types! {
+	pub const SessionsPerEra: sp_staking::SessionIndex = 6;
+	pub const BondingDuration: pallet_staking::EraIndex = 24 * 28;
+	pub const SlashDeferDuration: pallet_staking::EraIndex = 24 * 7; // 1/4 the bonding duration.
+	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
+	pub const MaxNominatorRewardedPerValidator: u32 = 64;
+	pub const ElectionLookahead: BlockNumber = EPOCH_DURATION_IN_BLOCKS / 4;
+	pub const MaxIterations: u32 = 10;
+	// 0.05%. The higher the value, the more strict solution acceptance becomes.
+	pub MinSolutionScoreBump: Perbill = Perbill::from_rational_approximation(5u32, 10_000);
+}
+
+impl pallet_staking::Trait for Runtime {
+	type Currency = Balances;
+	type UnixTime = Timestamp;
+	type CurrencyToVote = CurrencyToVoteHandler;
+	type RewardRemainder = (); // Treasury
+	type Event = Event;
+	type Slash = (); // send the slashed funds to the treasury.
+	type Reward = (); // rewards are minted from the void
+	type SessionsPerEra = SessionsPerEra;
+	type BondingDuration = BondingDuration;
+	type SlashDeferDuration = SlashDeferDuration;
+	/// A super-majority of the council can cancel the slash.
+	type SlashCancelOrigin = EnsureRoot<AccountId>;
+	type SessionInterface = Self;
+	type RewardCurve = RewardCurve;
+	type NextNewSession = Session;
+	type ElectionLookahead = ElectionLookahead;
+	type Call = Call;
+	type MaxIterations = MaxIterations;
+	type MinSolutionScoreBump = MinSolutionScoreBump;
+	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
+	type UnsignedPriority = StakingUnsignedPriority;
+	// type WeightInfo = (); Removed because of compiler error.
+}
+
+parameter_types! {
+	// pub const SessionDuration: BlockNumber = EPOCH_DURATION_IN_SLOTS as _;
+	// pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+	/// We prioritize im-online heartbeats over election solution submission.
+	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
+}
+
+impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime where
+	Call: From<C>,
+{
+	type Extrinsic = UncheckedExtrinsic;
+	type OverarchingCall = Call;
+}
+
+// parameter_types! {
+// 	pub const ProposalBond: Permill = Permill::from_percent(5);
+// 	pub const ProposalBondMinimum: Balance = 1 * DOLLARS;
+// 	pub const SpendPeriod: BlockNumber = 1 * DAYS;
+// 	pub const Burn: Permill = Permill::from_percent(50);
+// 	pub const TipCountdown: BlockNumber = 1 * DAYS;
+// 	pub const TipFindersFee: Percent = Percent::from_percent(20);
+// 	pub const TipReportDepositBase: Balance = 1 * DOLLARS;
+// 	pub const TipReportDepositPerByte: Balance = 1 * CENTS;
+// 	pub const TreasuryModuleId: ModuleId = ModuleId(*b"py/trsry");
+// }
+//
+// impl pallet_treasury::Trait for Runtime {
+// 	type ModuleId = TreasuryModuleId;
+// 	type Currency = Balances;
+// 	type ApproveOrigin = EnsureRoot<AccountId>;
+// 	type RejectOrigin = EnsureRoot<AccountId>;
+// 	type Tippers = (); // Elections;
+// 	type TipCountdown = (); //TipCountdown;
+// 	type TipFindersFee = (); //TipFindersFee;
+// 	type TipReportDepositBase = ();//TipReportDepositBase;
+// 	type TipReportDepositPerByte = (); //TipReportDepositPerByte;
+// 	type Event = Event;
+// 	type ProposalRejection = ();
+// 	type ProposalBond = ProposalBond;
+// 	type ProposalBondMinimum = ProposalBondMinimum;
+// 	type SpendPeriod = SpendPeriod;
+// 	type Burn = Burn;
+// 	// type BurnDestination = (); Removed due to compiler errors
+// 	// type WeightInfo = (); Removed due to compiler errors
+// }
 
 parameter_types! {
 	pub const EpochDuration: u64 = EPOCH_DURATION_IN_BLOCKS as u64;
@@ -210,7 +351,21 @@ parameter_types! {
 impl babe::Trait for Runtime {
 	type EpochDuration = EpochDuration;
 	type ExpectedBlockTime = ExpectedBlockTime;
-	type EpochChangeTrigger = SameAuthoritiesForever;
+	type EpochChangeTrigger = babe::ExternalTrigger; // SameAuthoritiesForever
+	// type KeyOwnerProofSystem = Historical;
+	//
+	// type KeyOwnerProof = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+	// 	KeyTypeId,
+	// 	pallet_babe::AuthorityId,
+	// )>>::Proof;
+	//
+	// type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+	// 	KeyTypeId,
+	// 	pallet_babe::AuthorityId,
+	// )>>::IdentificationTuple;
+	//
+	// type HandleEquivocation = ();
+	// // pallet_babe::EquivocationHandler<Self::KeyOwnerIdentification, Offences>;
 }
 
 impl grandpa::Trait for Runtime {
@@ -284,6 +439,9 @@ construct_runtime!(
 		RandomnessCollectiveFlip: randomness_collective_flip::{Module, Call, Storage},
 		Sudo: sudo::{Module, Call, Config<T>, Storage, Event<T>},
 		TransactionPayment: transaction_payment::{Module, Storage},
+		Staking: pallet_staking::{Module, Call, Config<T>, Storage, Event<T>, ValidateUnsigned},
+		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
+		// Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>}
 		// The Recipe Pallets
 		// (None)
 	}

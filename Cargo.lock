@@ -319,6 +319,9 @@ dependencies = [
  "pallet-balances",
  "pallet-grandpa",
  "pallet-randomness-collective-flip",
+ "pallet-session",
+ "pallet-staking",
+ "pallet-staking-reward-curve",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
@@ -334,6 +337,7 @@ dependencies = [
  "sp-offchain",
  "sp-runtime",
  "sp-session",
+ "sp-staking",
  "sp-std",
  "sp-transaction-pool",
  "sp-version",
@@ -2949,6 +2953,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-authorship"
+version = "2.0.0-rc4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1b4042b32c97d780b188ddefe35f77364ce833c7a2bf289c67d5546dcbcfb9c"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "parity-scale-codec",
+ "sp-authorship",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-babe"
 version = "2.0.0-rc4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3057,6 +3077,39 @@ dependencies = [
  "sp-staking",
  "sp-std",
  "sp-trie",
+]
+
+[[package]]
+name = "pallet-staking"
+version = "2.0.0-rc4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43aa00510e22a874955791ae7d78fa589a52ef9ed70a6f3fa63fb8009a72a6a7"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-authorship",
+ "pallet-session",
+ "parity-scale-codec",
+ "serde",
+ "sp-application-crypto",
+ "sp-io",
+ "sp-npos-elections",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+ "static_assertions",
+]
+
+[[package]]
+name = "pallet-staking-reward-curve"
+version = "2.0.0-rc5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fe7089a4f454e9923e5c973ef728db53f7c1c8ac3aee7f4951985b7c867bb71"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro2 1.0.18",
+ "quote 1.0.7",
+ "syn 1.0.33",
 ]
 
 [[package]]
@@ -5544,6 +5597,31 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "strum",
+]
+
+[[package]]
+name = "sp-npos-elections"
+version = "2.0.0-rc4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f125871b2fa526e37ea3dadd90c748bd069b6bb79aa30b3669db8d667d443f41"
+dependencies = [
+ "parity-scale-codec",
+ "serde",
+ "sp-arithmetic",
+ "sp-npos-elections-compact",
+ "sp-std",
+]
+
+[[package]]
+name = "sp-npos-elections-compact"
+version = "2.0.0-rc5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd7fe0bdb7b2115bff331d5ff8267aa6646477977ae247ed70550cb3ec54c576"
+dependencies = [
+ "proc-macro-crate",
+ "proc-macro2 1.0.18",
+ "quote 1.0.7",
+ "syn 1.0.33",
 ]
 
 [[package]]
