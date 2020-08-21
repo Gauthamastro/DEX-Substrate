@@ -2,7 +2,8 @@
 
 use super::{
 	AccountId, BabeConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, WASM_BINARY, SessionConfig, StakingConfig, StakerStatus,
+	SystemConfig, WASM_BINARY, SessionConfig, StakingConfig, StakerStatus, MainnetCollectiveConfig,
+	TechnicalCollectiveConfig, PBTCCollectiveConfig
 };
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{sr25519, Pair, Public};
@@ -105,6 +106,18 @@ pub fn testnet_genesis(
 			invulnerables: initial_authorities.iter().map(|x| x.2.clone()).collect(),
 			slash_reward_fraction: Perbill::from_percent(10),
 			.. Default::default()
+		}),
+		pallet_collective_Instance1: Some(MainnetCollectiveConfig{
+			members: vec![],
+			phantom: Default::default(),
+		}),
+		pallet_collective_Instance2: Some(TechnicalCollectiveConfig{
+			members: vec![],
+			phantom: Default::default(),
+		}),
+		pallet_collective_Instance3: Some(PBTCCollectiveConfig{
+			members: vec![],
+			phantom: Default::default(),
 		}),
 	}
 }

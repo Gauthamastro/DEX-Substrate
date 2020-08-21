@@ -317,6 +317,7 @@ dependencies = [
  "frame-system",
  "pallet-babe",
  "pallet-balances",
+ "pallet-collective",
  "pallet-grandpa",
  "pallet-randomness-collective-flip",
  "pallet-session",
@@ -3002,6 +3003,22 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "serde",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-collective"
+version = "2.0.0-rc4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc2389007735b7f4265404dc4a56f7101237cc3823300036131b7f71daa447c8"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]

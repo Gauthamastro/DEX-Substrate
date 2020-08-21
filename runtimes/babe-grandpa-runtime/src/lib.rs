@@ -494,9 +494,9 @@ construct_runtime!(
 		TransactionPayment: transaction_payment::{Module, Storage},
 		Staking: pallet_staking::{Module, Call, Config<T>, Storage, Event<T>, ValidateUnsigned},
 		Session: pallet_session::{Module, Call, Storage, Event, Config<T>},
-		MainnetCouncil: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-		TechnicalCouncil: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
-		PBTCCouncil: pallet_collective::<Instance3>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		MainnetCollective: pallet_collective::<Instance1>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		TechnicalCollective: pallet_collective::<Instance2>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		PBTCCollective: pallet_collective::<Instance3>::{Module, Call, Storage, Origin<T>, Event<T>, Config<T>},
 		Grandpa: grandpa::{Module, Call, Storage, Config, Event},
 		// Treasury: pallet_treasury::{Module, Call, Storage, Config, Event<T>}
 		// The Recipe Pallets
